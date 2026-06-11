@@ -1,7 +1,7 @@
 import { Game } from './game/game'
 import { Hud } from './render/hud'
 import { GameRenderer } from './render/scene'
-import { runCalibration } from './screens/calibrationScreen'
+import { CalibrationCancelled, runCalibration } from './screens/calibrationScreen'
 import { createOverlays } from './screens/overlays'
 import { KeyboardSource } from './signal/keyboardSource'
 import { MediaPipeSource } from './signal/mediapipeSource'
@@ -37,9 +37,11 @@ async function startCamera(): Promise<void> {
     source = mp
     game.startRun()
   } catch (err) {
-    console.error(err)
-    mp.stop() // release camera tracks if init partially succeeded
-    alert('Camera unavailable — falling back to keyboard. (↑ ↓ Space)')
+    mp.stop() // release camera tracks
+    if (!(err instanceof CalibrationCancelled)) {
+      console.error(err)
+      alert('Camera unavailable — falling back to keyboard. (↑ ↓ Space)')
+    }
     await startKeyboard()
   }
 }
