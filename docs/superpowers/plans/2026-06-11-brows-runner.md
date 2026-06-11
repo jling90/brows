@@ -1869,7 +1869,7 @@ export function createOverlays(ui: HTMLElement): Overlays {
         #rotate { display: flex !important; }
       }
     </style>
-    <div id="rotate" style="${PANEL_STYLE};z-index:10">
+    <div id="rotate" style="${PANEL_STYLE};z-index:10;display:none">
       <div style="font-size:48px">🔄</div>
       <div>Rotate your phone — Brows is a landscape game.</div>
     </div>`,
