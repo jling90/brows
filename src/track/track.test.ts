@@ -61,3 +61,22 @@ test('points returns {x,y} samples within a window', () => {
   expect(pts.length).toBeGreaterThan(0)
   expect(pts.every((p) => p.x >= 2 && p.x <= 4 && p.y === 5)).toBe(true)
 })
+
+test('advancePen caps how far it advances in a single call', () => {
+  const t = new Track()
+  t.advancePen(1e6, 0)
+  expect(t.penX).toBeLessThanOrEqual(100) // bounded, no frame stall
+})
+
+test('elevationAt clamps at both ends (before startX, beyond penX)', () => {
+  const t = new Track()
+  t.advancePen(5, 0.5)
+  expect(t.elevationAt(-10)).toBe(t.elevationAt(0))
+  expect(t.elevationAt(999)).toBe(t.penY)
+})
+
+test('points returns empty array for a non-overlapping window', () => {
+  const t = new Track()
+  t.advancePen(5, 0)
+  expect(t.points(50, 60)).toEqual([])
+})

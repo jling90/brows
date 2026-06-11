@@ -1,6 +1,7 @@
 import { CAVE_HEIGHT, DX, TRACK_MAX_Y, TRACK_MIN_Y } from '../config'
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+const MAX_ADVANCE_PER_CALL = 100 // world units; guards against frame stalls after clock jumps
 
 /** Sampled polyline on a fixed DX grid. Samples behind the Pen are committed and immutable. */
 export class Track {
@@ -21,11 +22,13 @@ export class Track {
 
   /** Append samples at the given slope (dy/dx) until the Pen reaches toX. */
   advancePen(toX: number, slope: number): void {
+    toX = Math.min(toX, this.penX + MAX_ADVANCE_PER_CALL)
     while (this.penX + DX <= toX) {
       this.ys.push(clamp(this.penY + slope * DX, TRACK_MIN_Y, TRACK_MAX_Y))
     }
   }
 
+  /** Linear interpolation; clamps at both ends (returns first sample before startX, penY beyond the Pen). */
   elevationAt(x: number): number {
     const f = (x - this.startX) / DX
     const i0 = clamp(Math.floor(f), 0, this.ys.length - 1)
