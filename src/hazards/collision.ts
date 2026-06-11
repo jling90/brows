@@ -32,6 +32,11 @@ export function hits(h: Hazard, b: Bounds, mouth: number): boolean {
       const half = h.maxHalf * Math.min(1, Math.max(0, mouth))
       return b.maxY > h.gapCenter + half || b.minY < h.gapCenter - half
     }
+    case 'clamp': {
+      // Inverted Maw: an open mouth bites the gap shut.
+      const half = h.maxHalf * Math.min(1, Math.max(0, 1 - mouth))
+      return b.maxY > h.gapCenter + half || b.minY < h.gapCenter - half
+    }
   }
 }
 

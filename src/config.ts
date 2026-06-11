@@ -28,3 +28,12 @@ export const SPEED_MAX = 24
 export const SPACING_START_S = 2.2
 export const SPACING_MIN_S = 1.1 // must stay ≥ PEN_LEAD_S so reaction windows never undercut track commitment
 export const SPACING_PER_M = 0.004
+
+// Hazard difficulty ramp (saturates alongside the speed curve: (SPEED_MAX−SPEED_START)/SPEED_PER_M = 320m)
+export const HAZARD_RAMP_M = 320
+export const SPIKE_MIN_H = 2.5
+export const SPIKE_MAX_H_START = 4.5 // gentle: leaves a 5.5 corridor
+export const SPIKE_MAX_H_END = 8.0 // spicy: forces threading within ~2 of the far surface
+export const MAW_MAX_HALF_START = 2.4 // a half-open mouth clears the Cart comfortably
+export const MAW_MAX_HALF_END = 1.6 // launch-day difficulty becomes the late game
+export const CLAMP_SHARE_END = 0.5 // share of mouth hazards that are Clamps at full ramp

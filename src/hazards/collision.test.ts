@@ -49,3 +49,12 @@ test('anyCollision scans all hazards', () => {
   expect(anyCollision(hazards, 10, 4.1, 0)).toBe(false)
   expect(anyCollision(hazards, 10, 7, 0)).toBe(true)
 })
+
+test('clamp aperture is inverted: closed mouth passes, open mouth bites', () => {
+  const h: Hazard = { kind: 'clamp', x: 10, gapCenter: 4.5, maxHalf: 1.6 }
+  // Cart y ∈ [4, 5]; needs aperture half ≥ 0.5 → (1 − mouth) ≥ 0.3125 → mouth ≤ 0.6875
+  expect(hits(h, cartBounds(10, 4), 0)).toBe(false) // mouth shut = wide open clamp
+  expect(hits(h, cartBounds(10, 4), 1)).toBe(true) // mouth open = bitten
+  expect(hits(h, cartBounds(10, 4), 0.8)).toBe(true) // mostly open still clips
+  expect(hits(h, cartBounds(10, 4), 0.5)).toBe(false) // half open squeaks through
+})

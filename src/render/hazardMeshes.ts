@@ -13,22 +13,25 @@ function spike(height: number, pointsUp: boolean): THREE.Group {
   return g
 }
 
-function slab(bottomY: number, topY: number, jaggedEnd: 'top' | 'bottom'): THREE.Group {
+function slab(bottomY: number, topY: number, jaggedEnd: 'top' | 'bottom', fangs = false): THREE.Group {
   const h = Math.max(0.01, topY - bottomY)
   const g = makeNeon(
     new THREE.BoxGeometry(HAZARD_HALF_W * 2, h, 1),
     colorAtY((bottomY + topY) / 2, GAMEPLAY_BRIGHT),
   )
   g.position.y = bottomY + h / 2
-  // Teeth on the gap-facing end of a maw slab.
+  // Teeth on the gap-facing end. Maw slabs get 3 short teeth; Clamp slabs get
+  // 5 long fangs — silhouette (not hue) distinguishes the inverted hazard (ADR 0003).
   const teethY = jaggedEnd === 'top' ? topY : bottomY
   const teeth = new THREE.Group()
-  for (const dx of [-0.3, 0, 0.3]) {
+  const xs = fangs ? [-0.4, -0.2, 0, 0.2, 0.4] : [-0.3, 0, 0.3]
+  const toothLen = fangs ? 0.85 : 0.45
+  for (const dx of xs) {
     const tooth = makeNeon(
-      new THREE.ConeGeometry(0.12, 0.45, 4),
+      new THREE.ConeGeometry(0.12, toothLen, 4),
       colorAtY(teethY, GAMEPLAY_BRIGHT),
     )
-    tooth.position.set(dx, jaggedEnd === 'top' ? h / 2 + 0.22 : -h / 2 - 0.22, 0)
+    tooth.position.set(dx, jaggedEnd === 'top' ? h / 2 + toothLen / 2 : -h / 2 - toothLen / 2, 0)
     if (jaggedEnd === 'bottom') tooth.rotation.z = Math.PI
     teeth.add(tooth)
   }
@@ -42,6 +45,8 @@ interface MawParts {
   upper: THREE.Group
   gapCenter: number
   maxHalf: number
+  /** Clamp: aperture follows (1 − Mouth Signal) instead of the Mouth Signal. */
+  invert: boolean
 }
 
 /** Keeps a three.js object per live hazard; maw slabs reposition with the live Mouth Signal. */
@@ -64,7 +69,8 @@ export class HazardMeshes {
       if (!this.byHazard.has(h)) this.add(h)
     }
     for (const [, m] of this.maws) {
-      const half = m.maxHalf * Math.min(1, Math.max(0, mouth))
+      const drive = m.invert ? 1 - mouth : mouth
+      const half = m.maxHalf * Math.min(1, Math.max(0, drive))
       // Slabs slide apart as the mouth opens; seam pulses (ADR 0003).
       m.lower.position.y = m.gapCenter - half - CAVE_HEIGHT / 2
       m.upper.position.y = m.gapCenter + half + CAVE_HEIGHT / 2
@@ -105,14 +111,18 @@ export class HazardMeshes {
         obj = g
         break
       }
-      case 'maw': {
+      case 'maw':
+      case 'clamp': {
         const g = new THREE.Group()
+        const fangs = h.kind === 'clamp'
         // Full-height slabs whose centers slide; geometry spans the cave so closed = sealed.
-        const lower = slab(0, CAVE_HEIGHT, 'top')
-        const upper = slab(0, CAVE_HEIGHT, 'bottom')
+        const lower = slab(0, CAVE_HEIGHT, 'top', fangs)
+        const upper = slab(0, CAVE_HEIGHT, 'bottom', fangs)
         g.add(lower, upper)
         obj = g
-        this.maws.set(h, { group: g, lower, upper, gapCenter: h.gapCenter, maxHalf: h.maxHalf })
+        this.maws.set(h, {
+          group: g, lower, upper, gapCenter: h.gapCenter, maxHalf: h.maxHalf, invert: fangs,
+        })
         break
       }
     }
