@@ -31,10 +31,10 @@ export class Spawner {
       const kind = this.rng() < clampShareAt(distance) ? 'clamp' : 'maw'
       return { kind, x, gapCenter: this.range(3, 7), maxHalf }
     }
+    // Walls were removed (#5): visually indistinguishable from Maws. Spikes absorb their share.
     const spikeMax = spikeMaxHeightAt(distance)
-    if (r < 0.45) return { kind: 'stalagmite', x, height: this.range(SPIKE_MIN_H, spikeMax) }
-    if (r < 0.7) return { kind: 'stalactite', x, height: this.range(SPIKE_MIN_H, spikeMax) }
-    return { kind: 'wall', x, gapCenter: this.range(2.5, 7.5), gapHalf: 1.4 }
+    if (r < 0.6) return { kind: 'stalagmite', x, height: this.range(SPIKE_MIN_H, spikeMax) }
+    return { kind: 'stalactite', x, height: this.range(SPIKE_MIN_H, spikeMax) }
   }
 
   private range(a: number, b: number): number {

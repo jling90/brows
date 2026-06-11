@@ -26,8 +26,6 @@ export function hits(h: Hazard, b: Bounds, mouth: number): boolean {
       return b.minY < h.height
     case 'stalactite':
       return b.maxY > CAVE_HEIGHT - h.height
-    case 'wall':
-      return b.maxY > h.gapCenter + h.gapHalf || b.minY < h.gapCenter - h.gapHalf
     case 'maw': {
       const half = h.maxHalf * Math.min(1, Math.max(0, mouth))
       return b.maxY > h.gapCenter + half || b.minY < h.gapCenter - half

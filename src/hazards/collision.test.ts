@@ -25,13 +25,6 @@ test('stalactite hits when cart top is above its tip', () => {
   expect(hits(h, cartBounds(10, 4), 0)).toBe(false) // cart top 5 < 5.5
 })
 
-test('wall passes only when the cart fits inside the fixed gap', () => {
-  const h: Hazard = { kind: 'wall', x: 10, gapCenter: 5, gapHalf: 1.4 }
-  expect(hits(h, cartBounds(10, 4.1), 0)).toBe(false) // cart y ∈ [4.1, 5.1] inside [3.6, 6.4]
-  expect(hits(h, cartBounds(10, 6), 0)).toBe(true) // top 7 > 6.4
-  expect(hits(h, cartBounds(10, 3), 0)).toBe(true) // bottom 3 < 3.6
-})
-
 test('maw aperture tracks the live Mouth Signal', () => {
   const h: Hazard = { kind: 'maw', x: 10, gapCenter: 4.5, maxHalf: 1.6 }
   // Cart y ∈ [4, 5]; needs aperture half ≥ 0.5 → mouth ≥ 0.3125
@@ -44,8 +37,9 @@ test('maw aperture tracks the live Mouth Signal', () => {
 test('anyCollision scans all hazards', () => {
   const hazards: Hazard[] = [
     { kind: 'stalagmite', x: 50, height: 9 },
-    { kind: 'wall', x: 10, gapCenter: 5, gapHalf: 1.4 },
+    { kind: 'clamp', x: 10, gapCenter: 5, maxHalf: 1.4 },
   ]
+  // Mouth closed → clamp wide open: cart y ∈ [4.1, 5.1] inside [3.6, 6.4]
   expect(anyCollision(hazards, 10, 4.1, 0)).toBe(false)
   expect(anyCollision(hazards, 10, 7, 0)).toBe(true)
 })

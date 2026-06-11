@@ -104,13 +104,6 @@ export class HazardMeshes {
       case 'stalactite':
         obj = spike(h.height, false)
         break
-      case 'wall': {
-        const g = new THREE.Group()
-        g.add(slab(0, h.gapCenter - h.gapHalf, 'top'))
-        g.add(slab(h.gapCenter + h.gapHalf, CAVE_HEIGHT, 'bottom'))
-        obj = g
-        break
-      }
       case 'maw':
       case 'clamp': {
         const g = new THREE.Group()

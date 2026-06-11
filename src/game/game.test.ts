@@ -41,9 +41,9 @@ test('raised brows make the track climb ahead of the cart', () => {
 
 test('collision ends the run and saves a new high score', () => {
   const store = memStore()
-  const g = new Game(store, () => 0.99) // rng → all walls
+  const g = new Game(store, () => 0.99) // rng → all stalactites, near max height
   g.startRun()
-  // Hold a full climb: the cart pins at the ceiling and must eventually hit a wall edge.
+  // Hold a full climb: the cart pins at the ceiling and must hit a stalactite.
   for (let i = 0; i < 60 * 120 && g.phase === 'running'; i++) g.update(1 / 60, raise)
   expect(g.phase).toBe('gameover')
   expect(g.highScore).toBeGreaterThan(0)

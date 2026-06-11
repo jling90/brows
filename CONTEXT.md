@@ -29,16 +29,12 @@ The point roughly one cart-second ahead of the Cart where new Track is laid. The
 _Avoid_: Frontier, cursor, generator point
 
 **Hazard**:
-A cave obstacle the Cart must not touch: a stalagmite (floor), stalactite (ceiling), Wall, Maw, or Clamp. Contact ends the run.
+A cave obstacle the Cart must not touch: a stalagmite (floor), stalactite (ceiling), Maw, or Clamp. Contact ends the run.
 _Avoid_: Obstacle, enemy
 
-**Wall**:
-A Hazard spanning floor to ceiling with a fixed gap at a set height. Passing it is a brow-precision test only.
-_Avoid_: Barrier, gate
-
 **Maw**:
-A Hazard spanning floor to ceiling whose toothy gap aperture is driven live by the Mouth Signal, evaluated as the Cart crosses. Visually organic and distinct from a Wall.
-_Avoid_: Mouth-wall, door, gate
+A Hazard spanning floor to ceiling whose toothy gap aperture is driven live by the Mouth Signal, evaluated as the Cart crosses.
+_Avoid_: Mouth-wall, door, gate, wall
 
 **Clamp**:
 A Hazard spanning floor to ceiling whose toothy gap closes as the Mouth Signal rises — the inverse of a Maw, crossed with the mouth shut. Mixed among Maws it forces open/closed alternation. Longer, denser fangs distinguish its silhouette from a Maw's.
