@@ -1,17 +1,25 @@
-import * as THREE from 'three'
+import { Game } from './game/game'
+import { GameRenderer } from './render/scene'
+import { KeyboardSource } from './signal/keyboardSource'
+import type { FaceSignalSource } from './signal/types'
 
 const canvas = document.querySelector<HTMLCanvasElement>('#game')!
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
-renderer.setSize(innerWidth, innerHeight)
-const scene = new THREE.Scene()
-const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 100)
-camera.position.z = 5
-const box = new THREE.LineSegments(
-  new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)),
-  new THREE.LineBasicMaterial({ color: 0x27e7ff }),
-)
-scene.add(box)
-renderer.setAnimationLoop(() => {
-  box.rotation.y += 0.01
-  renderer.render(scene, camera)
+const game = new Game()
+const renderer = new GameRenderer(canvas)
+const source: FaceSignalSource = new KeyboardSource()
+await source.start()
+
+// Temporary controls until Task 14 overlays: Enter starts/restarts.
+addEventListener('keydown', (e) => {
+  if (e.code === 'Enter' && game.phase !== 'running') game.startRun()
 })
+
+let last = performance.now()
+function tick(now: number): void {
+  const dt = Math.min(0.05, (now - last) / 1000)
+  last = now
+  game.update(dt, source.read())
+  renderer.render(game, dt)
+  requestAnimationFrame(tick)
+}
+requestAnimationFrame(tick)
