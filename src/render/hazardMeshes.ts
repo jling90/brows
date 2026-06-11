@@ -54,6 +54,7 @@ export class HazardMeshes {
     const live = new Set(hazards)
     for (const [h, obj] of this.byHazard) {
       if (!live.has(h)) {
+        this.dispose(obj)
         this.object.remove(obj)
         this.byHazard.delete(h)
         this.maws.delete(h)
@@ -68,7 +69,6 @@ export class HazardMeshes {
       m.lower.position.y = m.gapCenter - half - CAVE_HEIGHT / 2
       m.upper.position.y = m.gapCenter + half + CAVE_HEIGHT / 2
       const pulse = 0.75 + 0.25 * Math.sin(timeS * 6)
-      m.group.scale.setScalar(1)
       m.group.traverse((o) => {
         const line = o as THREE.LineSegments
         if ((line as any).isLineSegments || (line as any).isLineLoop) {
@@ -77,6 +77,16 @@ export class HazardMeshes {
         }
       })
     }
+  }
+
+  private dispose(obj: THREE.Object3D): void {
+    obj.traverse((o) => {
+      const m = o as THREE.Mesh
+      m.geometry?.dispose()
+      const mat = m.material as THREE.Material | THREE.Material[] | undefined
+      if (Array.isArray(mat)) mat.forEach((x) => x.dispose())
+      else mat?.dispose()
+    })
   }
 
   private add(h: Hazard): void {
