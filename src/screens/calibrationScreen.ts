@@ -1,5 +1,6 @@
 import type { CalibrationData } from '../signal/calibration'
 import type { MediaPipeSource, RawReading } from '../signal/mediapipeSource'
+import { drawCartHint, drawMawHint, provisionalBrow, provisionalMouth } from './calibrationHints'
 import { anchorsFrom, BROW_INDICES, LIP_INDICES, ParticleField } from './calibrationParticles'
 
 interface Step {
@@ -7,16 +8,22 @@ interface Step {
   collect: (mean: { brow: number; mouth: number }, c: Partial<CalibrationData>) => void
   /** Particle sparks for this step: which landmarks to dress, and how hard, from the raw signal. */
   fx?: { indices: number[]; intensity: (r: RawReading) => number }
+  /** Onboarding hint diagram: Cart/Track tilting with the brows, or a mini-Maw chomping (issue #4). */
+  hint: 'cart' | 'maw'
 }
 
 const STEPS: Step[] = [
   // Relax is the neutral baseline — deliberately no fx, keep it calm (issue #3).
-  { prompt: '😐 Relax your face', collect: (m, c) => { c.browNeutral = m.brow; c.mouthClosed = m.mouth } },
-  { prompt: '😮‍💨 Raise your eyebrows high', collect: (m, c) => { c.browRaised = m.brow },
+  { prompt: '😐 Relax your face', hint: 'cart',
+    collect: (m, c) => { c.browNeutral = m.brow; c.mouthClosed = m.mouth } },
+  { prompt: '😮‍💨 Raise your eyebrows high', hint: 'cart',
+    collect: (m, c) => { c.browRaised = m.brow },
     fx: { indices: BROW_INDICES, intensity: (r) => Math.max(0, r.brow) } },
-  { prompt: '😠 Furrow your brows', collect: (m, c) => { c.browFurrowed = m.brow },
+  { prompt: '😠 Furrow your brows', hint: 'cart',
+    collect: (m, c) => { c.browFurrowed = m.brow },
     fx: { indices: BROW_INDICES, intensity: (r) => Math.max(0, -r.brow) } },
-  { prompt: '😱 Open your mouth wide', collect: (m, c) => { c.mouthOpen = m.mouth },
+  { prompt: '😱 Open your mouth wide', hint: 'maw',
+    collect: (m, c) => { c.mouthOpen = m.mouth },
     fx: { indices: LIP_INDICES, intensity: (r) => r.mouth } },
 ]
 
@@ -38,6 +45,7 @@ export function runCalibration(ui: HTMLElement, source: MediaPipeSource): Promis
     el.innerHTML = `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(5,1,10,0.92);color:#fff;text-align:center">
       <div id="cal-video-box" style="position:relative;border:1px solid #27e7ff;border-radius:8px;overflow:hidden;box-shadow:0 0 16px #27e7ff55;transform:scaleX(-1)"></div>
       <div id="cal-prompt" style="font-size:26px"></div>
+      <canvas id="cal-hint-canvas" width="240" height="100" style="opacity:0.9"></canvas>
       <div id="cal-hint" style="font-size:14px;color:#f6c;min-height:18px"></div>
       <div id="cal-progress" style="width:240px;height:6px;background:#222;border-radius:3px">
         <div id="cal-bar" style="height:100%;width:0%;background:#ff2bd6;border-radius:3px"></div>
@@ -68,6 +76,8 @@ export function runCalibration(ui: HTMLElement, source: MediaPipeSource): Promis
     const fxCtx = fx.getContext('2d')!
     const field = new ParticleField()
     const promptEl = el.querySelector<HTMLElement>('#cal-prompt')!
+    const hintCanvas = el.querySelector<HTMLCanvasElement>('#cal-hint-canvas')!
+    const hintCtx = hintCanvas.getContext('2d')!
     const hintEl = el.querySelector<HTMLElement>('#cal-hint')!
     const barEl = el.querySelector<HTMLElement>('#cal-bar')!
     const cancelBtn = el.querySelector<HTMLElement>('#cal-cancel')!
@@ -119,6 +129,18 @@ export function runCalibration(ui: HTMLElement, source: MediaPipeSource): Promis
       }
       fxCtx.globalAlpha = 1
       fxCtx.globalCompositeOperation = 'source-over'
+      // Onboarding hint: live consequence preview. Baselines come from the relax
+      // step; before they exist, the raw value is its own baseline (level/closed).
+      // Freezes on face loss (no redraw); the no-face hint handles messaging.
+      if (raw) {
+        if (step.hint === 'cart') {
+          drawCartHint(hintCtx, hintCanvas.width, hintCanvas.height,
+            provisionalBrow(raw.brow, partial.browNeutral ?? raw.brow))
+        } else {
+          drawMawHint(hintCtx, hintCanvas.width, hintCanvas.height,
+            provisionalMouth(raw.mouth, partial.mouthClosed ?? raw.mouth))
+        }
+      }
       if (!sampling) {
         barEl.style.width = '0%'
         if (elapsed >= SETTLE_MS) {
