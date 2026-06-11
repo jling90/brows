@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <title>Brows</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #05010a; overflow: hidden; }
+      #game { display: block; width: 100%; height: 100%; }
+      #ui { position: fixed; inset: 0; pointer-events: none; font-family: ui-monospace, monospace; color: #fff; }
+      #ui > * { pointer-events: auto; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+    <div id="ui"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
