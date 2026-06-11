@@ -67,3 +67,8 @@ test('startRun after gameover starts a fresh run', () => {
   expect(g.distance).toBe(0)
   expect(g.track.penY).toBe(5)
 })
+
+test('corrupt stored high score falls back to 0', () => {
+  const g = new Game(memStore({ 'brows.highScore': 'garbage' }))
+  expect(g.highScore).toBe(0)
+})

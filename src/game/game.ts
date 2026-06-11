@@ -39,7 +39,8 @@ export class Game {
     private rng: () => number = Math.random,
   ) {
     this.spawner = new Spawner(rng)
-    this.highScore = Number(store.get(HIGH_SCORE_KEY) ?? 0)
+    const stored = Number(store.get(HIGH_SCORE_KEY) ?? 0)
+    this.highScore = Number.isFinite(stored) ? stored : 0
   }
 
   get cartX(): number {
