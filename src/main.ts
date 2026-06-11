@@ -1,8 +1,10 @@
 import { Game } from './game/game'
 import { Hud } from './render/hud'
 import { GameRenderer } from './render/scene'
+import { runCalibration } from './screens/calibrationScreen'
 import { createOverlays } from './screens/overlays'
 import { KeyboardSource } from './signal/keyboardSource'
+import { MediaPipeSource } from './signal/mediapipeSource'
 import type { FaceSignalSource } from './signal/types'
 
 const canvas = document.querySelector<HTMLCanvasElement>('#game')!
@@ -25,8 +27,21 @@ async function startKeyboard(): Promise<void> {
 }
 
 async function startCamera(): Promise<void> {
-  // Replaced with the MediaPipe + calibration flow in Tasks 15–16.
-  alert('Camera mode lands in a later task — keyboard for now!')
+  overlays.hide()
+  const mp = new MediaPipeSource()
+  try {
+    await mp.start()
+    game.phase = 'calibrating'
+    mp.calibration = await runCalibration(ui, mp)
+    source.stop()
+    source = mp
+    game.startRun()
+  } catch (err) {
+    console.error(err)
+    mp.stop() // release camera tracks if init partially succeeded
+    alert('Camera unavailable — falling back to keyboard. (↑ ↓ Space)')
+    await startKeyboard()
+  }
 }
 
 function showTitle(): void {

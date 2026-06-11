@@ -2213,8 +2213,8 @@ import { MediaPipeSource } from './signal/mediapipeSource'
 
 async function startCamera(): Promise<void> {
   overlays.hide()
+  const mp = new MediaPipeSource()
   try {
-    const mp = new MediaPipeSource()
     await mp.start()
     game.phase = 'calibrating'
     mp.calibration = await runCalibration(ui, mp)
@@ -2223,6 +2223,7 @@ async function startCamera(): Promise<void> {
     game.startRun()
   } catch (err) {
     console.error(err)
+    mp.stop() // release camera tracks if init partially succeeded
     alert('Camera unavailable — falling back to keyboard. (↑ ↓ Space)')
     await startKeyboard()
   }
