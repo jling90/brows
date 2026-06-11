@@ -58,10 +58,17 @@ function tick(now: number): void {
   game.update(dt, frame)
   renderer.avatar.update(frame?.landmarks ?? null, game.signals.faceLost)
   if (wasRunning && game.phase === 'gameover') {
-    overlays.showGameOver(game.score, game.highScore, () => {
-      overlays.hide()
-      game.startRun()
-    })
+    overlays.showGameOver(
+      game.score,
+      game.highScore,
+      () => {
+        overlays.hide()
+        game.startRun()
+      },
+      () => {
+        showTitle()
+      },
+    )
   }
   wasRunning = game.phase === 'running'
   hud.update(game)

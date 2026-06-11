@@ -1852,7 +1852,7 @@ const BTN_STYLE =
 
 export interface Overlays {
   showTitle(onKeyboard: () => void, onCamera: () => void): void
-  showGameOver(score: number, high: number, onRetry: () => void): void
+  showGameOver(score: number, high: number, onRetry: () => void, onMenu: () => void): void
   hide(): void
 }
 
@@ -1887,13 +1887,15 @@ export function createOverlays(ui: HTMLElement): Overlays {
       el.querySelector('#play-cam')!.addEventListener('click', onCamera)
       el.querySelector('#play-kb')!.addEventListener('click', onKeyboard)
     },
-    showGameOver(score, high, onRetry) {
+    showGameOver(score, high, onRetry, onMenu) {
       el.innerHTML = `<div style="${PANEL_STYLE}">
         <h2 style="margin:0;color:#ff2bd6">DERAILED</h2>
         <div style="font-size:24px">${score}m${score >= high ? ' — new best!' : ` · best ${high}m`}</div>
         <button id="retry" style="${BTN_STYLE}">↻ Ride again</button>
+        <button id="menu" style="${BTN_STYLE};opacity:0.7">☰ Menu</button>
       </div>`
       el.querySelector('#retry')!.addEventListener('click', onRetry)
+      el.querySelector('#menu')!.addEventListener('click', onMenu)
     },
     hide() {
       el.innerHTML = ''
@@ -1946,10 +1948,17 @@ function tick(now: number): void {
   last = now
   game.update(dt, source.read())
   if (wasRunning && game.phase === 'gameover') {
-    overlays.showGameOver(game.score, game.highScore, () => {
-      overlays.hide()
-      game.startRun()
-    })
+    overlays.showGameOver(
+      game.score,
+      game.highScore,
+      () => {
+        overlays.hide()
+        game.startRun()
+      },
+      () => {
+        showTitle()
+      },
+    )
   }
   wasRunning = game.phase === 'running'
   hud.update(game)
