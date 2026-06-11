@@ -17,6 +17,11 @@ describe('normalizeBrow', () => {
     const flat = { ...c, browRaised: 0.3 }
     expect(normalizeBrow(0.5, flat)).toBe(0)
   })
+  test('non-finite raw yields 0, not NaN', () => {
+    expect(normalizeBrow(NaN, c)).toBe(0)
+    expect(normalizeBrow(Infinity, c)).toBe(0)
+    expect(normalizeBrow(-Infinity, c)).toBe(0)
+  })
 })
 
 describe('normalizeMouth', () => {
@@ -30,5 +35,10 @@ describe('normalizeMouth', () => {
   test('degenerate range yields 0, not NaN', () => {
     const flat = { ...c, mouthOpen: 0.05 }
     expect(normalizeMouth(0.5, flat)).toBe(0)
+  })
+  test('non-finite raw yields 0, not NaN', () => {
+    expect(normalizeMouth(NaN, c)).toBe(0)
+    expect(normalizeMouth(Infinity, c)).toBe(0)
+    expect(normalizeMouth(-Infinity, c)).toBe(0)
   })
 })
