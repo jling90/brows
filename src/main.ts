@@ -54,7 +54,9 @@ let last = performance.now()
 function tick(now: number): void {
   const dt = Math.min(0.05, (now - last) / 1000)
   last = now
-  game.update(dt, source.read())
+  const frame = source.read()
+  game.update(dt, frame)
+  renderer.avatar.update(frame?.landmarks ?? null, game.signals.faceLost)
   if (wasRunning && game.phase === 'gameover') {
     overlays.showGameOver(game.score, game.highScore, () => {
       overlays.hide()

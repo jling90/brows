@@ -5,6 +5,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { CAVE_HEIGHT, DEAD_ZONE, MAX_SLOPE, TRACK_MAX_Y, TRACK_MIN_Y } from '../config'
 import { applyDeadZone } from '../signal/deadzone'
 import type { Game } from '../game/game'
+import { Avatar } from './avatar'
 import { CartMesh } from './cartMesh'
 import { HazardMeshes } from './hazardMeshes'
 import { Parallax } from './parallax'
@@ -25,6 +26,7 @@ export class GameRenderer {
   private cartMesh = new CartMesh()
   private hazardMeshes = new HazardMeshes()
   private parallax = new Parallax()
+  readonly avatar = new Avatar()
   private pen: THREE.Mesh
   private time = 0
 
@@ -91,5 +93,19 @@ export class GameRenderer {
 
     if (this.composer) this.composer.render()
     else this.renderer.render(this.scene, this.camera)
+
+    if (this.avatar.hasFace) {
+      const size = Math.min(150, innerWidth * 0.15)
+      const pad = 12
+      this.renderer.autoClear = false
+      this.renderer.clearDepth()
+      this.renderer.setScissorTest(true)
+      this.renderer.setScissor(pad, innerHeight - size - pad, size, size)
+      this.renderer.setViewport(pad, innerHeight - size - pad, size, size)
+      this.renderer.render(this.avatar.scene, this.avatar.camera)
+      this.renderer.setScissorTest(false)
+      this.renderer.setViewport(0, 0, innerWidth, innerHeight)
+      this.renderer.autoClear = true
+    }
   }
 }

@@ -3,6 +3,7 @@ export interface FaceFrame {
   brow: number
   mouth: number
   /** 478×3 normalised landmark coords for the Avatar, or null if the source has none (keyboard). */
+  /** Buffer may be reused by the source each frame — consume immediately, copy if retaining. */
   landmarks: Float32Array | null
 }
 
