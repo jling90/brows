@@ -39,9 +39,11 @@ export class MediaPipeSource implements FaceSignalSource {
     this.video.muted = true
     this.video.playsInline = true
     await this.video.play()
-    const fileset = await FilesetResolver.forVisionTasks('/wasm')
+    // BASE_URL ends with '/'; resolves correctly at '/' (dev) and '/brows/' (GitHub Pages).
+    const base = import.meta.env.BASE_URL
+    const fileset = await FilesetResolver.forVisionTasks(`${base}wasm`)
     this.landmarker = await FaceLandmarker.createFromOptions(fileset, {
-      baseOptions: { modelAssetPath: '/models/face_landmarker.task', delegate: 'GPU' },
+      baseOptions: { modelAssetPath: `${base}models/face_landmarker.task`, delegate: 'GPU' },
       runningMode: 'VIDEO',
       outputFaceBlendshapes: true,
       numFaces: 1,
