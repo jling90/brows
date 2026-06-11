@@ -17,6 +17,14 @@ export const isMobile = () => navigator.maxTouchPoints > 0
 const CAM_AHEAD = 8 // camera looks ahead of the cart
 const VIEW_HALF = 25
 
+// The Avatar renders as an enormous dim backdrop centered behind the gameplay
+// plane (chosen over a corner PiP after playtesting: eyes live at the right
+// screen edge, so a corner viewport was never seen). Low opacity keeps it
+// below scenery in the ADR 0003 intensity hierarchy.
+const BACKDROP_SCALE = 38 // mesh is ~1 unit tall → fills most of the view at z = −30
+const BACKDROP_OPACITY = 0.20
+const BACKDROP_Z = -30
+
 export class GameRenderer {
   private renderer: THREE.WebGLRenderer
   private scene = new THREE.Scene()
@@ -27,6 +35,7 @@ export class GameRenderer {
   private hazardMeshes = new HazardMeshes()
   private parallax = new Parallax()
   readonly avatar = new Avatar()
+  private avatarBackdrop: THREE.Object3D
   private pen: THREE.Mesh
   private time = 0
 
@@ -38,6 +47,9 @@ export class GameRenderer {
     this.camera.position.set(CAM_AHEAD, CAVE_HEIGHT / 2, 16)
 
     this.scene.add(this.trackMesh.object, this.cartMesh.object, this.hazardMeshes.object, this.parallax.object)
+
+    this.avatarBackdrop = this.avatar.backdropObject(BACKDROP_SCALE, BACKDROP_OPACITY)
+    this.scene.add(this.avatarBackdrop)
 
     // Floor/ceiling bounds (dim scenery).
     for (const y of [0, CAVE_HEIGHT]) {
@@ -91,21 +103,13 @@ export class GameRenderer {
     this.pen.rotation.z = this.time * 2
     this.pen.position.y = Math.min(TRACK_MAX_Y, Math.max(TRACK_MIN_Y, this.pen.position.y))
 
+    // Hidden until landmarks exist: keyboard mode (and pre-first-detection) has
+    // an all-zero buffer that would render as a single bloomed dot. Face loss
+    // keeps hasFace true, so the frozen gray pose stays visible.
+    this.avatarBackdrop.visible = this.avatar.hasFace
+    this.avatarBackdrop.position.set(camX, CAVE_HEIGHT / 2, BACKDROP_Z)
+
     if (this.composer) this.composer.render()
     else this.renderer.render(this.scene, this.camera)
-
-    if (this.avatar.hasFace) {
-      const size = Math.min(150, innerWidth * 0.15)
-      const pad = 12
-      this.renderer.autoClear = false
-      this.renderer.clearDepth()
-      this.renderer.setScissorTest(true)
-      this.renderer.setScissor(pad, innerHeight - size - pad, size, size)
-      this.renderer.setViewport(pad, innerHeight - size - pad, size, size)
-      this.renderer.render(this.avatar.scene, this.avatar.camera)
-      this.renderer.setScissorTest(false)
-      this.renderer.setViewport(0, 0, innerWidth, innerHeight)
-      this.renderer.autoClear = true
-    }
   }
 }

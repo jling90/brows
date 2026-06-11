@@ -5,8 +5,8 @@ A browser-based three.js endless runner (in the spirit of Chrome's Dino game) wh
 ## Language
 
 **Avatar**:
-The live low-poly rendering of the player's face, built from tracker landmarks and shown in a screen corner during play. It is the primary tracking feedback: it mirrors what the tracker sees and grays out on face loss. No raw webcam video is shown during a Run.
-_Avoid_: Face preview, PiP, webcam view
+The live low-poly rendering of the player's face, built from tracker landmarks and shown as a dim, enormous backdrop centered behind the Track during play. It is the primary tracking feedback: it mirrors what the tracker sees and grays out on face loss. No raw webcam video is shown during a Run.
+_Avoid_: Face preview, PiP, webcam view, backdrop mesh
 
 **Brow Signal**:
 The continuous 1D input value derived from the player's eyebrow height, ranging from fully furrowed to fully raised. It steers the slope (climb/descend rate) of newly generated Track.

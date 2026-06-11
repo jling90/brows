@@ -4,10 +4,8 @@ import { gradientColor } from './palette'
 
 const LOST_COLOR = new THREE.Color(0.35, 0.35, 0.35)
 
-/** Live low-poly face: MediaPipe tessellation rendered as edge lines in a corner viewport. */
+/** Live low-poly face: MediaPipe tessellation rendered as edge lines, shown as a dim backdrop in the main scene. */
 export class Avatar {
-  readonly scene = new THREE.Scene()
-  readonly camera = new THREE.OrthographicCamera(-0.6, 0.6, 0.6, -0.6, 0.1, 10)
   private lines: THREE.LineSegments
   private positions: Float32Array
   private material: THREE.LineBasicMaterial
@@ -24,8 +22,13 @@ export class Avatar {
     this.material = new THREE.LineBasicMaterial({ color: this.liveColor, transparent: true, opacity: 0.9 })
     this.lines = new THREE.LineSegments(geo, this.material)
     this.lines.frustumCulled = false
-    this.scene.add(this.lines)
-    this.camera.position.z = 1
+  }
+
+  /** The line mesh styled for use as an in-scene backdrop; the caller owns placement. */
+  backdropObject(scale: number, opacity: number): THREE.LineSegments {
+    this.material.opacity = opacity
+    this.lines.scale.setScalar(scale)
+    return this.lines
   }
 
   update(landmarks: Float32Array | null, faceLost: boolean): void {
