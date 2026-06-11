@@ -19,3 +19,8 @@ test('hazard spacing starts at SPACING_START_S and shrinks with distance', () =>
 test('spacing floors at SPACING_MIN_S', () => {
   expect(spacingSecondsAt(1e6)).toBe(SPACING_MIN_S)
 })
+
+test('mid-curve exact values', () => {
+  expect(speedAt(50)).toBeCloseTo(10.5) // 8 + 0.05×50
+  expect(spacingSecondsAt(50)).toBeCloseTo(2.0) // 2.2 − 0.004×50
+})

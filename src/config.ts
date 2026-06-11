@@ -21,9 +21,10 @@ export const MAW_REST_S = 6 // min seconds between Maws
 export const VIEW_AHEAD_S = 3 // hazards exist this far ahead of the Cart
 
 // Difficulty
+// Speed and spacing curves are tuned to saturate together (~320m); keep them in sync when retuning.
 export const SPEED_START = 8
 export const SPEED_PER_M = 0.05
 export const SPEED_MAX = 24
 export const SPACING_START_S = 2.2
-export const SPACING_MIN_S = 0.9
+export const SPACING_MIN_S = 1.1 // must stay ≥ PEN_LEAD_S so reaction windows never undercut track commitment
 export const SPACING_PER_M = 0.004
