@@ -36,9 +36,18 @@ export function runCalibration(ui: HTMLElement, source: MediaPipeSource): Promis
     </div>`
     ui.appendChild(el)
     const videoBox = el.querySelector<HTMLElement>('#cal-video-box')!
-    source.video.width = 320
-    source.video.height = 240
-    videoBox.appendChild(source.video) // raw video is allowed here only (Calibration)
+    // The tracker's own <video> must NEVER enter the DOM: removing a playing media
+    // element from the document pauses it (HTML spec), which froze face tracking on the
+    // last calibration frame after this overlay was removed (issue #2). Instead, show a
+    // separate PiP element sharing the same MediaStream. Raw video is allowed here only.
+    const pip = document.createElement('video')
+    pip.muted = true
+    pip.playsInline = true
+    pip.width = 320
+    pip.height = 240
+    pip.srcObject = source.video.srcObject
+    void pip.play()
+    videoBox.appendChild(pip)
     const promptEl = el.querySelector<HTMLElement>('#cal-prompt')!
     const hintEl = el.querySelector<HTMLElement>('#cal-hint')!
     const barEl = el.querySelector<HTMLElement>('#cal-bar')!
