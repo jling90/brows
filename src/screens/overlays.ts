@@ -8,6 +8,8 @@ const BTN_STYLE =
 export interface Overlays {
   showTitle(onKeyboard: () => void, onCamera: () => void): void
   showGameOver(score: number, high: number, onRetry: () => void, onMenu: () => void): void
+  /** Camera-startup loading panel. Returns an updater for the status line. */
+  showLoading(): (status: string) => void
   hide(): void
 }
 
@@ -19,6 +21,10 @@ export function createOverlays(ui: HTMLElement): Overlays {
   ui.insertAdjacentHTML(
     'beforeend',
     `<style>
+      @keyframes loadpulse {
+        0%, 100% { opacity: 0.45; filter: drop-shadow(0 0 3px #ff2bd6); }
+        50% { opacity: 1; filter: drop-shadow(0 0 12px #ff2bd6); }
+      }
       #rotate { display: none; }
       @media (orientation: portrait) and (pointer: coarse) {
         #rotate { display: flex !important; }
@@ -51,6 +57,21 @@ export function createOverlays(ui: HTMLElement): Overlays {
       </div>`
       el.querySelector('#retry')!.addEventListener('click', onRetry)
       el.querySelector('#menu')!.addEventListener('click', onMenu)
+    },
+    showLoading() {
+      // Loading is UI, not gameplay: stays below full gameplay brightness (ADR 0003).
+      el.innerHTML = `<div style="${PANEL_STYLE}">
+        <svg width="120" height="92" viewBox="0 0 120 92" fill="none" style="animation:loadpulse 1.2s ease-in-out infinite">
+          <path d="M22 26 H98 L88 60 H32 Z" stroke="#ff2bd6" stroke-width="2"/>
+          <path d="M22 26 L88 60 M98 26 L32 60" stroke="#ff2bd6" stroke-width="1" opacity="0.5"/>
+          <circle cx="45" cy="71" r="8" stroke="#27e7ff" stroke-width="2"/>
+          <circle cx="75" cy="71" r="8" stroke="#27e7ff" stroke-width="2"/>
+          <path d="M8 84 H112" stroke="#ff9a3c" stroke-width="2"/>
+        </svg>
+        <div id="loading-status" style="font-size:16px;color:#b9aaff">…</div>
+      </div>`
+      const status = el.querySelector<HTMLElement>('#loading-status')!
+      return (s: string) => { status.textContent = s }
     },
     hide() {
       el.innerHTML = ''

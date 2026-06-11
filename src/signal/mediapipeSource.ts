@@ -18,6 +18,9 @@ export function rawMouthFromBlendshapes(cats: Category[]): number {
   return score(cats, 'jawOpen')
 }
 
+/** Startup phases reported by MediaPipeSource.start() for loading UI. */
+export type LoadPhase = 'camera' | 'tracker'
+
 export interface RawReading {
   brow: number
   mouth: number
@@ -31,7 +34,8 @@ export class MediaPipeSource implements FaceSignalSource {
   private stream: MediaStream | null = null
   private landmarkBuf = new Float32Array(478 * 3)
 
-  async start(): Promise<void> {
+  async start(onPhase?: (phase: LoadPhase) => void): Promise<void> {
+    onPhase?.('camera')
     this.stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: 640, height: 480 },
     })
@@ -39,6 +43,7 @@ export class MediaPipeSource implements FaceSignalSource {
     this.video.muted = true
     this.video.playsInline = true
     await this.video.play()
+    onPhase?.('tracker')
     // BASE_URL ends with '/'; resolves correctly at '/' (dev) and '/brows/' (GitHub Pages).
     const base = import.meta.env.BASE_URL
     const fileset = await FilesetResolver.forVisionTasks(`${base}wasm`)

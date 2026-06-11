@@ -4,7 +4,7 @@ import { GameRenderer } from './render/scene'
 import { CalibrationCancelled, runCalibration } from './screens/calibrationScreen'
 import { createOverlays } from './screens/overlays'
 import { KeyboardSource } from './signal/keyboardSource'
-import { MediaPipeSource } from './signal/mediapipeSource'
+import { MediaPipeSource, type LoadPhase } from './signal/mediapipeSource'
 import type { FaceSignalSource } from './signal/types'
 
 const canvas = document.querySelector<HTMLCanvasElement>('#game')!
@@ -26,17 +26,24 @@ async function startKeyboard(): Promise<void> {
   game.startRun()
 }
 
+const LOADING_COPY: Record<LoadPhase, string> = {
+  camera: 'requesting camera…',
+  tracker: 'loading face tracker…',
+}
+
 async function startCamera(): Promise<void> {
-  overlays.hide()
+  const setStatus = overlays.showLoading()
   const mp = new MediaPipeSource()
   try {
-    await mp.start()
+    await mp.start((phase) => setStatus(LOADING_COPY[phase]))
+    overlays.hide()
     game.phase = 'calibrating'
     mp.calibration = await runCalibration(ui, mp)
     source.stop()
     source = mp
     game.startRun()
   } catch (err) {
+    overlays.hide()
     mp.stop() // release camera tracks
     if (!(err instanceof CalibrationCancelled)) {
       console.error(err)
